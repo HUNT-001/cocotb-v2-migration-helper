@@ -11,4 +11,5 @@ def test_demo_fixture_matches_expected() -> None:
 
     assert result.migrated == expected
     assert result.changed is True
-    assert len(result.diagnostics) == 3
+    assert len(result.diagnostics) == 4
+    assert any(d.rule == "coroutine_decorator_detector" for d in result.diagnostics)

@@ -2,133 +2,232 @@
 
 A prototype CST-based migration helper for upgrading legacy cocotb testbenches to cocotb 2.x.
 
-## What this demo does
+## Overview
 
-This prototype scans legacy cocotb Python code and performs a small set of targeted rewrites for common cocotb 2.x migration patterns.
+`cocotb-v2-migration-helper` is a Python-based proof-of-concept tool that scans legacy cocotb test code and applies targeted migration rewrites for selected cocotb 2.x upgrade patterns.
 
-### Implemented rules
+This project is designed around a simple principle:
 
-- `cocotb.fork(...)` → `cocotb.start_soon(...)`
-- `raise TestFailure("msg")` → `assert False, "msg"`
-- `handle._id("sig", extended=False)` → `handle["sig"]`
+- auto-fix what is safe,
+- warn on behavior-sensitive changes,
+- leave ambiguous cases for manual review.
 
-## Why this matters
-
-Migrating to cocotb 2.x is not always a simple text replacement problem. Some changes are safe to auto-fix, while others may require manual review because of semantic differences.
-
-For example, `cocotb.start_soon()` does not behave exactly like `cocotb.fork()`. This prototype rewrites the call but also emits a warning so the user can review behavior-sensitive cases.
-
-## Current prototype goals
-
-- Show that cocotb migration can be treated as a syntax-aware transformation problem
-- Separate safe rewrites from warn-only cases
-- Preserve a path toward a more complete CLI migration assistant
-
-## Project structure
-
-```text
-src/cocotb_migrate/
-├─ cli.py
-├─ diagnostics.py
-├─ engine.py
-└─ rules/
-   ├─ fork_to_start_soon.py
-   ├─ testfailure_to_assert.py
-   └─ handle_id_to_getitem.py
-Installation
-pip install -e ".[dev]"
-Run the demo
-python -m cocotb_migrate.cli scan examples/legacy/legacy_input.py
-Run tests
-pytest
-Example behavior
-
-The tool:
-
-rewrites safe migration patterns,
-prints a unified diff,
-emits diagnostics for review.
-Next steps
-
-Planned improvements include:
-
-recursive directory scanning,
-JSON diagnostics output,
-more cocotb 2.x migration rules,
-clearer classification into auto-fix vs warn-only vs manual-review cases.
+The current prototype demonstrates how cocotb migration can be treated as a syntax-aware source transformation problem instead of a fragile text-replacement script.
 
 ---
 
-### 4. Add a `DESIGN.md`
-This is important because mentors like seeing engineering thinking, not just code.
+## Motivation
 
-Create `DESIGN.md` with this:
+Upgrading legacy cocotb testbenches to cocotb 2.x is not always a simple search-and-replace exercise.
 
-```md
-# Design Notes: cocotb-v2-migration-helper
+Some API updates can be rewritten mechanically, while others involve semantic differences that require developer review. A useful migration helper should therefore do more than blindly replace strings:
 
-## Goal
+- it should parse code structurally,
+- perform safe rewrites,
+- emit clear diagnostics,
+- and preserve a path toward human review where needed.
 
-Build a syntax-aware migration helper for cocotb 2.x upgrades.
+This prototype explores that direction using a CST-based approach.
 
-The tool should assist users in migrating legacy cocotb test code by:
-- automatically rewriting safe patterns,
-- warning on behavior-sensitive patterns,
-- leaving unsupported or ambiguous cases for manual review.
+---
 
-## Why CST instead of regex
-
-Legacy cocotb migration involves Python syntax and API usage patterns that should be modified structurally, not via plain string replacement.
-
-Concrete syntax tree tooling provides:
-- more reliable matching,
-- safer rewrites,
-- better preservation of formatting and source structure.
-
-## Current rule categories
+## Current Features
 
 ### Auto-fix with warning
 - `cocotb.fork(...)` → `cocotb.start_soon(...)`
 
-Reason:
-The replacement is syntactically straightforward, but behavior can differ because `start_soon()` schedules execution after the current task yields.
+This rewrite is applied automatically, but a warning is emitted because the scheduling behavior is not identical in all cases.
 
 ### Safe auto-fix
 - `raise TestFailure("msg")` → `assert False, "msg"`
 - `handle._id("sig", extended=False)` → `handle["sig"]`
 
-Reason:
-These patterns have direct migration equivalents in common simple cases.
+These cases are rewritten automatically for simple supported patterns.
 
-### Manual review
-Cases with:
-- dynamic `_id(...)` arguments,
-- unsupported `_id(...)` argument forms,
-- complex `TestFailure(...)` usage,
-- future coroutine/decorator migrations that may need broader context.
+### Warn-only detection
+- Detect `@cocotb.coroutine`
 
-## CLI direction
+This pattern is currently flagged for manual migration and is not automatically rewritten.
 
-The prototype currently supports:
-- `scan path`
+---
 
-Planned commands:
-- `fix path`
-- recursive directory traversal
-- JSON diagnostics output
-- dry-run mode
-- rule-level enable/disable controls
+## Why CST instead of regex?
 
-## Non-goals for the prototype
+This project uses a concrete syntax tree style approach because cocotb migration involves Python syntax and API structure, not just plain text replacement.
 
-This prototype does not attempt to:
-- fully migrate all cocotb 2.x changes,
-- guarantee behavioral equivalence,
-- perform simulator-aware validation.
+A CST-based design helps with:
 
-## Future rule candidates
+- safer matching,
+- more reliable rewrites,
+- cleaner diagnostics,
+- preservation of source layout,
+- easier future expansion into additional rules.
 
-- `@cocotb.coroutine`
-- deprecated logging access patterns
-- runner API migration checks
-- import cleanup for removed cocotb result APIs
+---
+
+## Example
+
+### Input
+```python
+import cocotb
+from cocotb.result import TestFailure
+from cocotb.triggers import Timer
+
+
+@cocotb.coroutine
+def legacy_coroutine_helper(dut):
+    yield Timer(1, units="ns")
+
+
+async def helper(dut):
+    dut._log.info("helper running")
+
+
+@cocotb.test()
+async def test_legacy(dut):
+    task = cocotb.fork(helper(dut))
+    signal_handle = dut._id("data_valid", extended=False)
+    raise TestFailure("legacy failure path")
+Output
+import cocotb
+from cocotb.result import TestFailure
+from cocotb.triggers import Timer
+
+
+@cocotb.coroutine
+def legacy_coroutine_helper(dut):
+    yield Timer(1, units="ns")
+
+
+async def helper(dut):
+    dut._log.info("helper running")
+
+
+@cocotb.test()
+async def test_legacy(dut):
+    task = cocotb.start_soon(helper(dut))
+    signal_handle = dut["data_valid"]
+    assert False, "legacy failure path"
+Diagnostics
+coroutine_decorator_detector: Detected @cocotb.coroutine usage. Manual migration review recommended.
+fork_to_start_soon: Rewrote cocotb.fork() to cocotb.start_soon(). Review behavior because scheduling semantics may differ.
+testfailure_to_assert: Rewrote raise TestFailure("...") to assert False, "...".
+handle_id_to_getitem: Rewrote handle._id("name", extended=False) to handle["name"].
+Project Structure
+cocotb-v2-migration-helper/
+├─ pyproject.toml
+├─ README.md
+├─ DESIGN.md
+├─ src/
+│  └─ cocotb_migrate/
+│     ├─ __init__.py
+│     ├─ cli.py
+│     ├─ diagnostics.py
+│     ├─ engine.py
+│     └─ rules/
+│        ├─ __init__.py
+│        ├─ coroutine_detector.py
+│        ├─ fork_to_start_soon.py
+│        ├─ testfailure_to_assert.py
+│        └─ handle_id_to_getitem.py
+├─ examples/
+│  ├─ legacy/
+│  │  └─ legacy_input.py
+│  └─ expected/
+│     └─ legacy_expected.py
+└─ tests/
+   └─ test_rules.py
+Installation
+1. Clone the repository
+git clone https://github.com/HUNT-001/cocotb-v2-migration-helper.git
+cd cocotb-v2-migration-helper
+2. Create and activate a virtual environment
+Windows PowerShell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+Linux / macOS
+python -m venv .venv
+source .venv/bin/activate
+3. Install dependencies
+pip install -e ".[dev]"
+Usage
+Scan a file
+python -m cocotb_migrate.cli scan examples/legacy/legacy_input.py
+
+This will:
+
+parse the file,
+apply supported rewrites,
+print a unified diff,
+emit diagnostics.
+Run tests
+pytest
+Current Rule Classification
+Rule	Status	Behavior
+cocotb.fork(...) → cocotb.start_soon(...)	Auto-fix with warning	Rewritten automatically, warning emitted
+raise TestFailure("msg") → assert False, "msg"	Safe auto-fix	Rewritten automatically
+handle._id("sig", extended=False) → handle["sig"]	Safe auto-fix	Rewritten automatically
+@cocotb.coroutine	Warn-only	Detected and reported, not rewritten
+Design Direction
+
+The intended long-term workflow is:
+
+Scan legacy cocotb code
+Classify findings into:
+safe auto-fix,
+auto-fix with warning,
+manual review
+Rewrite supported patterns
+Report diagnostics clearly to the user
+
+This keeps the tool useful even before it reaches full migration coverage.
+
+More details are documented in DESIGN.md
+.
+
+Current Limitations
+
+This is an early prototype and intentionally limited in scope.
+
+Current limitations include:
+
+only a small subset of cocotb 2.x migration patterns are implemented,
+no recursive directory traversal yet,
+no JSON diagnostics output yet,
+no auto-rewrite yet for deprecated coroutine-style code,
+no simulator-backed validation of transformed testbenches.
+Roadmap
+
+Planned next steps:
+
+recursive directory scanning,
+fix command for writing changes back to disk,
+JSON and machine-readable diagnostics,
+additional cocotb 2.x migration rules,
+clearer rule categories for:
+safe auto-fix,
+warn-only,
+manual review,
+improved reporting and rule-level controls.
+Development
+
+To make local changes:
+
+pip install -e ".[dev]"
+pytest
+python -m cocotb_migrate.cli scan examples/legacy/legacy_input.py
+
+Suggested development workflow:
+
+add or refine a migration rule,
+create/update fixture examples,
+add a test,
+verify CLI output and diagnostics.
+Why this repo exists
+
+This repository serves as a focused proof-of-concept for a cocotb 2.x migration assistant and demonstrates:
+
+syntax-aware source rewriting,
+migration rule classification,
+warning-oriented developer guidance,
+a practical base for a larger migration tool.

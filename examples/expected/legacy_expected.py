@@ -1,5 +1,11 @@
 import cocotb
 from cocotb.result import TestFailure
+from cocotb.triggers import Timer
+
+
+@cocotb.coroutine
+def legacy_coroutine_helper(dut):
+    yield Timer(1, units="ns")
 
 
 async def helper(dut):

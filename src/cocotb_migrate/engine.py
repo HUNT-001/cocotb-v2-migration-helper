@@ -8,6 +8,7 @@ import libcst as cst
 
 from cocotb_migrate.diagnostics import Diagnostic
 from cocotb_migrate.rules import (
+    CoroutineDecoratorDetectorRule,
     ForkToStartSoonRule,
     HandleIdToGetitemRule,
     TestFailureToAssertRule,
@@ -15,6 +16,7 @@ from cocotb_migrate.rules import (
 
 
 RULES = [
+    CoroutineDecoratorDetectorRule,
     ForkToStartSoonRule,
     TestFailureToAssertRule,
     HandleIdToGetitemRule,

@@ -21,20 +21,20 @@ A CST-based approach helps with:
 ## Rule categories
 
 ### Auto-fix with warning
-- `cocotb.fork(...)` → `cocotb.start_soon(...)`
+- cocotb.fork(...) -> cocotb.start_soon(...)
 
 Reason:
-This rewrite is syntactically direct, but semantics may differ because `start_soon()` schedules execution after the current task yields.
+This rewrite is syntactically direct, but semantics may differ because start_soon() schedules execution after the current task yields.
 
 ### Safe auto-fix
-- `raise TestFailure("msg")` → `assert False, "msg"`
-- `handle._id("sig", extended=False)` → `handle["sig"]`
+- aise TestFailure("msg") -> ssert False, "msg"
+- handle._id("sig", extended=False) -> handle["sig"]
 
 Reason:
 These have direct migration equivalents in common simple cases.
 
 ### Warn-only / manual review
-- `@cocotb.coroutine`
+- @cocotb.coroutine
 
 Reason:
 Coroutine-style code may require broader migration context and should be flagged before any automatic rewrite is attempted.
@@ -49,10 +49,10 @@ The prototype currently demonstrates:
 ## CLI direction
 
 Current command:
-- `scan path`
+- scan path
 
 Planned commands:
-- `fix path`
+- ix path
 - recursive directory traversal
 - JSON diagnostics output
 - dry-run mode
