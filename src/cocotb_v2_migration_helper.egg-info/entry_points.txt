@@ -1,2 +1,0 @@
-[console_scripts]
-cocotb-migrate = cocotb_migrate.cli:app
