@@ -96,12 +96,11 @@ coroutine_decorator_detector: Detected @cocotb.coroutine usage. Manual migration
 fork_to_start_soon: Rewrote cocotb.fork() to cocotb.start_soon(). Review behavior because scheduling semantics may differ.
 testfailure_to_assert: Rewrote raise TestFailure("...") to assert False, "...".
 handle_id_to_getitem: Rewrote handle._id("name", extended=False) to handle["name"].
-
+```
 ## Demo Output
 
 ![Demo output](docs/demo-output.png)
 
-```
 Project Structure
 ```
 cocotb-v2-migration-helper/
