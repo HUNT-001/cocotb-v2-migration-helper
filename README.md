@@ -89,7 +89,7 @@ async def test_legacy(dut):
     signal_handle = dut._id("data_valid", extended=False)
     raise TestFailure("legacy failure path")
 ```
-Output
+## Output
 ```
 Diagnostics
 coroutine_decorator_detector: Detected @cocotb.coroutine usage. Manual migration review recommended.
@@ -101,7 +101,7 @@ handle_id_to_getitem: Rewrote handle._id("name", extended=False) to handle["name
 
 ![Demo output](docs/demo-output.png)
 
-Project Structure
+## Project Structure
 ```
 cocotb-v2-migration-helper/
 ├─ pyproject.toml
@@ -127,22 +127,22 @@ cocotb-v2-migration-helper/
 └─ tests/
    └─ test_rules.py
 ```
-Installation
-1. Clone the repository
+## Installation
+### 1. Clone the repository
 ```git clone https://github.com/HUNT-001/cocotb-v2-migration-helper.git```
 ```cd cocotb-v2-migration-helper```
-2. Create and activate a virtual environment
-Windows PowerShell
+### 2. Create and activate a virtual environment
+### Windows PowerShell
 ```python -m venv .venv```
 ```.venv\Scripts\Activate.ps1```
-Linux / macOS
+### Linux / macOS
 ```python -m venv .venv```
 ```source .venv/bin/activate```
-3. Install dependencies
-`pip install -e ".[dev]"
-Usage
+### 3. Install dependencies
+`pip install -e ".[dev]"`
+## Usage
 Scan a file
-python -m cocotb_migrate.cli scan examples/legacy/legacy_input.py`
+`python -m cocotb_migrate.cli scan examples/legacy/legacy_input.py`
 
 This will:
 
@@ -152,72 +152,76 @@ print a unified diff,
 emit diagnostics.
 Run tests
 pytest
-Current Rule Classification
-Rule	Status	Behavior
-cocotb.fork(...) → cocotb.start_soon(...)	Auto-fix with warning	Rewritten automatically, warning emitted
-raise TestFailure("msg") → assert False, "msg"	Safe auto-fix	Rewritten automatically
-handle._id("sig", extended=False) → handle["sig"]	Safe auto-fix	Rewritten automatically
-@cocotb.coroutine	Warn-only	Detected and reported, not rewritten
-Design Direction
+## Current Rule Classification
+-Rule	Status	Behavior
+-cocotb.fork(...) → cocotb.start_soon(...)	Auto-fix with warning	Rewritten automatically, warning emitted
+-raise TestFailure("msg") → assert False, "msg"	Safe auto-fix	Rewritten automatically
+-handle._id("sig", extended=False) → handle["sig"]	Safe auto-fix	Rewritten automatically
+-@cocotb.coroutine	Warn-only	Detected and reported, not rewritten
 
-The intended long-term workflow is:
+## Design Direction
 
-Scan legacy cocotb code
-Classify findings into:
-safe auto-fix,
-auto-fix with warning,
-manual review
-Rewrite supported patterns
-Report diagnostics clearly to the user
+### The intended long-term workflow is:
 
-This keeps the tool useful even before it reaches full migration coverage.
+-Scan legacy cocotb code
+-Classify findings into:
+-safe auto-fix,
+-auto-fix with warning,
+-manual review
+-Rewrite supported patterns
+-Report diagnostics clearly to the user
 
-More details are documented in DESIGN.md
+-This keeps the tool useful even before it reaches full migration coverage.
+
+-More details are documented in DESIGN.md
 .
 
-Current Limitations
+## Current Limitations
 
-This is an early prototype and intentionally limited in scope.
+-This is an early prototype and intentionally limited in scope.
 
-Current limitations include:
+### Current limitations include:
 
-only a small subset of cocotb 2.x migration patterns are implemented,
-no recursive directory traversal yet,
-no JSON diagnostics output yet,
-no auto-rewrite yet for deprecated coroutine-style code,
-no simulator-backed validation of transformed testbenches.
-Roadmap
+-only a small subset of cocotb 2.x migration patterns are implemented,
+-no recursive directory traversal yet,
+-no JSON diagnostics output yet,
+-no auto-rewrite yet for deprecated coroutine-style code,
+-no simulator-backed validation of transformed testbenches.
 
-Planned next steps:
+## Roadmap
 
-recursive directory scanning,
-fix command for writing changes back to disk,
-JSON and machine-readable diagnostics,
-additional cocotb 2.x migration rules,
-clearer rule categories for:
-safe auto-fix,
-warn-only,
-manual review,
-improved reporting and rule-level controls.
-Development
+### Planned next steps:
 
-To make local changes:
+-recursive directory scanning,
+-fix command for writing changes back to disk,
+-JSON and machine-readable diagnostics,
+-additional cocotb 2.x migration rules,
+-clearer rule categories for:
+-safe auto-fix,
+-warn-only,
+-manual review,
+-improved reporting and rule-level controls.
+
+## Development
+
+### To make local changes:
 ```
 pip install -e ".[dev]"
 pytest
 python -m cocotb_migrate.cli scan examples/legacy/legacy_input.py
 ```
-Suggested development workflow:
+### Suggested development workflow:
 
-add or refine a migration rule,
-create/update fixture examples,
-add a test,
-verify CLI output and diagnostics.
-Why this repo exists
+-add or refine a migration rule,
+-create/update fixture examples,
+-add a test,
+-verify CLI output and diagnostics.
 
-This repository serves as a focused proof-of-concept for a cocotb 2.x migration assistant and demonstrates:
+## Why this repo exists
 
-syntax-aware source rewriting,
-migration rule classification,
-warning-oriented developer guidance,
-a practical base for a larger migration tool.
+-This repository serves as a focused proof-of-concept for a cocotb 2.x migration assistant and demonstrates:
+
+-syntax-aware source rewriting,
+-migration rule classification,
+-warning-oriented developer guidance,
+-a practical base for a larger migration tool.
