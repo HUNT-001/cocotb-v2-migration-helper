@@ -88,7 +88,9 @@ async def test_legacy(dut):
     task = cocotb.fork(helper(dut))
     signal_handle = dut._id("data_valid", extended=False)
     raise TestFailure("legacy failure path")
-Output
+```
+##Output
+```
 import cocotb
 from cocotb.result import TestFailure
 from cocotb.triggers import Timer
@@ -108,12 +110,15 @@ async def test_legacy(dut):
     task = cocotb.start_soon(helper(dut))
     signal_handle = dut["data_valid"]
     assert False, "legacy failure path"
+
 Diagnostics
 coroutine_decorator_detector: Detected @cocotb.coroutine usage. Manual migration review recommended.
 fork_to_start_soon: Rewrote cocotb.fork() to cocotb.start_soon(). Review behavior because scheduling semantics may differ.
 testfailure_to_assert: Rewrote raise TestFailure("...") to assert False, "...".
 handle_id_to_getitem: Rewrote handle._id("name", extended=False) to handle["name"].
+```
 Project Structure
+
 cocotb-v2-migration-helper/
 ├─ pyproject.toml
 ├─ README.md
@@ -137,22 +142,23 @@ cocotb-v2-migration-helper/
 │     └─ legacy_expected.py
 └─ tests/
    └─ test_rules.py
+
 Installation
 1. Clone the repository
-git clone https://github.com/HUNT-001/cocotb-v2-migration-helper.git
-cd cocotb-v2-migration-helper
+```git clone https://github.com/HUNT-001/cocotb-v2-migration-helper.git```
+```cd cocotb-v2-migration-helper```
 2. Create and activate a virtual environment
 Windows PowerShell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
+```python -m venv .venv```
+```.venv\Scripts\Activate.ps1```
 Linux / macOS
-python -m venv .venv
-source .venv/bin/activate
+```python -m venv .venv```
+```source .venv/bin/activate```
 3. Install dependencies
-pip install -e ".[dev]"
+`pip install -e ".[dev]"
 Usage
 Scan a file
-python -m cocotb_migrate.cli scan examples/legacy/legacy_input.py
+python -m cocotb_migrate.cli scan examples/legacy/legacy_input.py`
 
 This will:
 
@@ -212,11 +218,11 @@ improved reporting and rule-level controls.
 Development
 
 To make local changes:
-
+```
 pip install -e ".[dev]"
 pytest
 python -m cocotb_migrate.cli scan examples/legacy/legacy_input.py
-
+```
 Suggested development workflow:
 
 add or refine a migration rule,
