@@ -90,35 +90,14 @@ async def test_legacy(dut):
     raise TestFailure("legacy failure path")
 ```
 Output
-```
-import cocotb
-from cocotb.result import TestFailure
-from cocotb.triggers import Timer
-
-
-@cocotb.coroutine
-def legacy_coroutine_helper(dut):
-    yield Timer(1, units="ns")
-
-
-async def helper(dut):
-    dut._log.info("helper running")
-
-
-@cocotb.test()
-async def test_legacy(dut):
-    task = cocotb.start_soon(helper(dut))
-    signal_handle = dut["data_valid"]
-    assert False, "legacy failure path"
-
 Diagnostics
 coroutine_decorator_detector: Detected @cocotb.coroutine usage. Manual migration review recommended.
 fork_to_start_soon: Rewrote cocotb.fork() to cocotb.start_soon(). Review behavior because scheduling semantics may differ.
 testfailure_to_assert: Rewrote raise TestFailure("...") to assert False, "...".
 handle_id_to_getitem: Rewrote handle._id("name", extended=False) to handle["name"].
-```
-Project Structure
 
+Project Structure
+```
 cocotb-v2-migration-helper/
 ├─ pyproject.toml
 ├─ README.md
@@ -142,7 +121,7 @@ cocotb-v2-migration-helper/
 │     └─ legacy_expected.py
 └─ tests/
    └─ test_rules.py
-
+```
 Installation
 1. Clone the repository
 ```git clone https://github.com/HUNT-001/cocotb-v2-migration-helper.git```
