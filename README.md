@@ -89,7 +89,7 @@ async def test_legacy(dut):
     signal_handle = dut._id("data_valid", extended=False)
     raise TestFailure("legacy failure path")
 ```
-##Output
+Output
 ```
 import cocotb
 from cocotb.result import TestFailure
