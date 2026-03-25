@@ -57,11 +57,11 @@ This project uses a concrete syntax tree style approach because cocotb migration
 
 A CST-based design helps with:
 
-- safer matching,
-- more reliable rewrites,
-- cleaner diagnostics,
-- preservation of source layout,
-- easier future expansion into additional rules.
+- safer matching,                                                                                                                                                  
+- more reliable rewrites,                                                                                                                                          
+- cleaner diagnostics,                                                                                                                                             
+- preservation of source layout,                                                                                                                                   
+- easier future expansion into additional rules.                                                                                                                   
 
 ---
 
@@ -129,14 +129,14 @@ cocotb-v2-migration-helper/
 ```
 ## Installation
 ### 1. Clone the repository
-```git clone https://github.com/HUNT-001/cocotb-v2-migration-helper.git```
+```git clone https://github.com/HUNT-001/cocotb-v2-migration-helper.git```                                                                                         
 ```cd cocotb-v2-migration-helper```
 ### 2. Create and activate a virtual environment
 ### Windows PowerShell
-```python -m venv .venv```
+```python -m venv .venv```                                                                                                                                         
 ```.venv\Scripts\Activate.ps1```
 ### Linux / macOS
-```python -m venv .venv```
+```python -m venv .venv```                                                                                                                                         
 ```source .venv/bin/activate```
 ### 3. Install dependencies
 `pip install -e ".[dev]"`
@@ -146,35 +146,34 @@ Scan a file
 
 This will:
 
-parse the file,
-apply supported rewrites,
-print a unified diff,
-emit diagnostics.
-Run tests
+parse the file,                                                                                                                                                    
+apply supported rewrites,                                                                                                                                          
+print a unified diff,                                                                                                                                              
+emit diagnostics.                                                                                                                                                  
+Run tests                                                                                                                                                          
 pytest
 ## Current Rule Classification
--Rule	Status	Behavior
--cocotb.fork(...) → cocotb.start_soon(...)	Auto-fix with warning	Rewritten automatically, warning emitted
--raise TestFailure("msg") → assert False, "msg"	Safe auto-fix	Rewritten automatically
--handle._id("sig", extended=False) → handle["sig"]	Safe auto-fix	Rewritten automatically
--@cocotb.coroutine	Warn-only	Detected and reported, not rewritten
+-Rule	Status	Behavior                                                                                                                                           
+-cocotb.fork(...) → cocotb.start_soon(...)	Auto-fix with warning	Rewritten automatically, warning emitted                                                       
+-raise TestFailure("msg") → assert False, "msg"	Safe auto-fix	Rewritten automatically                                                                            
+-handle._id("sig", extended=False) → handle["sig"]	Safe auto-fix	Rewritten automatically                                                                        
+-@cocotb.coroutine	Warn-only	Detected and reported, not rewritten                                                                                               
 
 ## Design Direction
 
 ### The intended long-term workflow is:
 
--Scan legacy cocotb code
--Classify findings into:
--safe auto-fix,
--auto-fix with warning,
--manual review
--Rewrite supported patterns
--Report diagnostics clearly to the user
+-Scan legacy cocotb code                                                                                                                                           
+-Classify findings into:                                                                                                                                           
+-safe auto-fix,                                                                                                                                                    
+-auto-fix with warning,                                                                                                                                            
+-manual review                                                                                                                                                     
+-Rewrite supported patterns                                                                                                                                        
+-Report diagnostics clearly to the user                                                                                                                          
 
--This keeps the tool useful even before it reaches full migration coverage.
+-This keeps the tool useful even before it reaches full migration coverage.                                                                                        
 
--More details are documented in DESIGN.md
-.
+-More details are documented in DESIGN.md                                                                                                                          
 
 ## Current Limitations
 
@@ -192,15 +191,15 @@ pytest
 
 ### Planned next steps:
 
--recursive directory scanning,
--fix command for writing changes back to disk,
--JSON and machine-readable diagnostics,
--additional cocotb 2.x migration rules,
--clearer rule categories for:
--safe auto-fix,
--warn-only,
--manual review,
--improved reporting and rule-level controls.
+-recursive directory scanning,                                                                                                                               
+-fix command for writing changes back to disk,                                                                                                                  
+-JSON and machine-readable diagnostics,                                                                                                                          
+-additional cocotb 2.x migration rules,                                                                                                                        
+-clearer rule categories for:                                                                                                                                    
+-safe auto-fix,                                                                                                                                                 
+-warn-only,                                                                                                                                                        
+-manual review,                                                                                                                                                  
+-improved reporting and rule-level controls.                                                                                                                       
 
 ## Development
 
@@ -212,10 +211,10 @@ python -m cocotb_migrate.cli scan examples/legacy/legacy_input.py
 ```
 ### Suggested development workflow:
 
--add or refine a migration rule,
--create/update fixture examples,
--add a test,
--verify CLI output and diagnostics.
+-add or refine a migration rule,                                                                                                                                
+-create/update fixture examples,                                                                                                                                  
+-add a test,                                                                                                                                                       
+-verify CLI output and diagnostics.                                                                                                                            
 
 ## Why this repo exists
 
